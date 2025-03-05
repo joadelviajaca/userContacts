@@ -89,7 +89,9 @@ app.post('/api/auth/login', async (req, res) => {
 
 // Verificar token
 app.get('/api/auth/verify', authenticateToken, (req, res) => {
-  res.json({ message: 'Token válido', userId: req.user.userId });
+  const user = req.user;
+  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+  res.json({ message: 'Token válido', token });
 });
 
 // Obtener contactos de un usuario
