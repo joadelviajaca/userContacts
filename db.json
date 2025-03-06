@@ -15,6 +15,14 @@
       "email": "carlos@example.com",
       "telefono": "123456789",
       "direccion": "Calle Mayor 10, Madrid"
+    },
+    {
+      "id": "wNGJa9HSrN1cS5HX33O2p",
+      "userId": "YLnIiIvZntfJ49bhwVFD3",
+      "nombre": "Prueba",
+      "email": "prueba@example.com",
+      "telefono": "333333",
+      "direccion": "Calle falsa"
     }
   ]
 }
