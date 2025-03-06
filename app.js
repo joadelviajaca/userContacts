@@ -59,7 +59,7 @@ function authenticateToken(req, res, next) {
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) return res.status(403).json({ error: 'Token inválido' });
-    req.user = user;
+    req.userId = user.userId;
     next();
   });
 }
@@ -89,15 +89,15 @@ app.post('/api/auth/login', async (req, res) => {
 
 // Verificar token
 app.get('/api/auth/verify', authenticateToken, (req, res) => {
-  const user = req.user;
-  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+  const userId = req.userId;
+  const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '1h' });
   res.json({ message: 'Token válido', token });
 });
 
 // Obtener contactos de un usuario
 app.get('/api/contactos/:userId', authenticateToken, async (req, res) => {
   const userId = req.params.userId;
-  if (req.user.userId !== userId) {
+  if (req.userId !== userId) {
     return res.status(403).json({ error: 'Acceso denegado' });
   }
   const contactos = db.data.contacts.filter(c => c.userId === userId);
@@ -108,7 +108,7 @@ app.get('/api/contactos/:userId', authenticateToken, async (req, res) => {
 app.get('/api/contactos/contacto/:id', authenticateToken, async (req, res) => {
   const contacto = db.data.contacts.find(c => c.id === req.params.id);
   if (!contacto) return res.status(404).json({ error: 'Contacto no encontrado' });
-  if (contacto.userId !== req.user.userId) {
+  if (contacto.userId !== req.userId) {
     return res.status(403).json({ error: 'Acceso denegado' });
   }
   res.json(contacto);
@@ -117,7 +117,7 @@ app.get('/api/contactos/contacto/:id', authenticateToken, async (req, res) => {
 // Añadir un nuevo contacto
 app.post('/api/contactos', authenticateToken, async (req, res) => {
   const { nombre, email, telefono, direccion } = req.body;
-  const newContact = { id: nanoid(), userId: req.user.userId, nombre, email, telefono, direccion };
+  const newContact = { id: nanoid(), userId: req.userId, nombre, email, telefono, direccion };
   db.data.contacts.push(newContact);
   await db.write();
   res.json(newContact);
@@ -128,7 +128,7 @@ app.put('/api/contactos/:id', authenticateToken, async (req, res) => {
   const id = req.params.id;
   const contacto = db.data.contacts.find(c => c.id === id);
   if (!contacto) return res.status(404).json({ error: 'Contacto no encontrado' });
-  if (contacto.userId !== req.user.userId) {
+  if (contacto.userId !== req.userId) {
     return res.status(403).json({ error: 'Acceso denegado' });
   }
   Object.assign(contacto, req.body);
@@ -141,7 +141,7 @@ app.delete('/api/contactos/:id', authenticateToken, async (req, res) => {
   const id = req.params.id;
   const contacto = db.data.contacts.find(c => c.id === id);
   if (!contacto) return res.status(404).json({ error: 'Contacto no encontrado' });
-  if (contacto.userId !== req.user.userId) {
+  if (contacto.userId !== req.userId) {
     return res.status(403).json({ error: 'Acceso denegado' });
   }
   db.data.contacts = db.data.contacts.filter(c => c.id !== id);
